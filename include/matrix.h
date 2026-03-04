@@ -4,16 +4,30 @@
 #include <stdlib.h>
 
 typedef struct {
-	int* data;
+	double* data;
 	int rows;
 	int cols;
 } Matrix;
 
 Matrix RandomMatrix(int rows, int cols);
 
-int CheckMatrix(Matrix A, Matrix B);
+Matrix MatrixAdd(Matrix A, Matrix B);
+
+Matrix MatrixSub(Matrix A, Matrix B);
+
+Matrix Transpose(Matrix A);
 
 Matrix MatrixMult(Matrix A, Matrix B);
+
+Matrix MatrixScale(double scalar, Matrix A);
+
+Matrix MatrixPower(Matrix A, int power);
+
+Matrix MatrixScaleAdd(double x, Matrix A);
+
+double MatrixSum(Matrix A);
+
+int CheckMatrix(Matrix A, Matrix B);
 
 void PrintMatrix(Matrix x);
 

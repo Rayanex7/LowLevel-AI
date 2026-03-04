@@ -1,19 +1,19 @@
-# LowLevel AI Library (C)
+# LowLevelAI: Machine Learning from Scratch in C
 
-A lightweight, optimized Machine Learning library written in pure C from scratch.
+A lightweight, low-level linear algebra library and machine learning implementation written in pure C (Standard C99).
 
-## Features
-- **Matrix Operations:** Multiplication, creation, and memory management.
-- **Performance:** Optimized loops (comparable to NumPy speeds).
-- **No Dependencies:** Runs on standard C libraries.
+## 🚀 Features
+* **Matrix Operations:** Multiplication, Transpose, Scaling, Addition/Subtraction.
+* **Memory Management:** Manual allocation and cleanup utils.
+* **Algorithms:** Linear Regression with Gradient Descent.
 
-## Structure
-- `src/`: The core logic (Matrix multiplication engine).
-- `include/`: Header files and struct definitions.
-- `examples/`: Test files and usage demos.
+## 📂 Project Structure
+* `src/matrix.c`: Core implementation of matrix math.
+* `examples/linear_regression.c`: a model training y = 2x.
 
-## How to Build
-To compile the test:
+## 🛠️ How to Run
+Compile the linear regression example using GCC:
+
 ```bash
-gcc -I./include src/matrix.c examples/test_matrix.c -o ai_test
-./ai_test
+gcc -O3 -I./include src/matrix.c examples/linear_regression.c -o train_model -lm
+./train_model
