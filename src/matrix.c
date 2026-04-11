@@ -4,27 +4,18 @@
 #include <math.h>
 
 
-Matrix RandomMatrix(int rows, int cols) {
-    double* data = malloc(sizeof(double) * rows * cols);
-    for (int i = 0; i < rows * cols; i++) {
-        data[i] = rand() % 10; 
-    }
-    Matrix m = {data, rows, cols};
-    return m;
-}
-
-int CheckMatrix(Matrix A, Matrix B) {
-	if (A.cols == B.rows) return (0);
-	else return (1);
-}
-
-Matrix MatrixMult(Matrix A, Matrix B) {
-	if (CheckMatrix(A, B) == 1) {
-		Matrix w = {NULL, 0, 0};
-		return (w);
+void mat_rand(int rows, int cols, Matrix *dest) {
+	if (dest->rows != rows || dest->cols != cols) {printf("mat_rand(): ERROR[Dimension mismatched]\n"); return;}
+	for (int i = 0; i < rows * cols; i++) {
+		dest->data[i] = rand() % 10; 
 	}
+}
 
-	double* Mat = malloc(sizeof(double) * A.rows * B.cols);
+void mat_mul(Matrix A, Matrix B, Matrix *dest) {
+	if (A.cols != B.rows) {printf("mat_mul(): ERROR[First matrix columns != Second matrix rows]"); return;}
+	if (dest->rows != A.rows || dest->cols != B.cols) {printf("mat_mul(): ERROR[Output matrix (*dest) has different size]"); return;}
+	if (dest->data == A.data || dest->data == B.data) {printf("mat_mul(): ERROR[Destination matrix cannot alias input matrices]"); return;}
+
 	int x = 0, j = 0, k = 0, y = 0, z;
 	double res;
 
@@ -46,82 +37,98 @@ Matrix MatrixMult(Matrix A, Matrix B) {
 		}
 		else k++;
 
-		Mat[x] = res;
+		dest->data[x] = res;
 		x++;
 	}
-	Matrix w = {Mat, A.rows, B.cols};
-	return (w);
 }
+/*
+void mat_mul(Matrix A, Matrix B, Matrix* dest) {
+	if (A.cols != B.rows) {printf("mat_mul(): ERROR[First matrix columns != Second matrix rows]"); return;}
+        if (dest->rows != A.rows || dest->cols != B.cols) {printf("mat_mul(): ERROR[Output matrix (*dest) has different size]"); return;}
+        if (dest->data == A.data || dest->data == B.data) {printf("mat_mul(): ERROR[Destination matrix cannot alias input matrices]"); return;}
 
-Matrix MatrixAdd(Matrix A, Matrix B)
-{
-	if (A.rows != B.rows || A.cols != B.cols)
-	{
-		Matrix x = {NULL, 0, 0};
-		return (x);
+	double res;
+	int x = 0, k = 0;
+	for (int i = 0 ; i < A.rows ; i++) {
+		for (int j = 0 ; j < B.cols ; j++) {
+			res = 0;
+			for (k = 0 ; k < A.cols ; k++) {
+				res += A.data[(i*A.cols)+k] * B.data[(k*B.cols)+j];
+			}
+			dest->data[x] = res;
+			x++;
+		}
 	}
-	double* Mat = malloc(sizeof(double)*A.rows*A.cols);
-	for (int i = 0; i < A.rows*A.cols ; i++)
-		Mat[i] = A.data[i] + B.data[i];
-	Matrix x = {Mat, A.rows, A.cols};
-	return (x);
-}
+}*/
 
-Matrix MatrixSub(Matrix A, Matrix B)
+void mat_add(Matrix A, Matrix B, Matrix *dest)
 {
+	if (dest->data == A.data || dest->data == B.data) {printf("mat_mul(): ERROR[Destination matrix cannot alias input matrices]"); return;}
 	if (A.rows != B.rows || A.cols != B.cols)
-	{
-		Matrix x = {NULL, 0, 0};
-		return (x);
-	}
-	double* Mat = malloc(sizeof(double)*A.rows*A.cols);
-	for (int i = 0; i < A.rows*A.cols ; i++)
-		Mat[i] = A.data[i] - B.data[i];
-	Matrix x = {Mat, A.rows, A.cols};
-	return (x);
+	{printf("mat_add(): ERROR[Dimension mismatch]"); return;}
+	for (int i = 0; i < A.rows*A.cols ; i++) {dest->data[i] = A.data[i] + B.data[i];}
 }
 
-Matrix MatrixScale(double scalar, Matrix A) {
-	double* Mat = malloc(sizeof(double)*A.rows*A.cols);
+void mat_subM(Matrix A, Matrix B, Matrix *dest)
+{
+	if (dest->data == A.data || dest->data == B.data) {printf("mat_mul(): ERROR[Destination matrix cannot alias input matrices]"); return;}
+	if (A.rows == B.rows && A.cols == B.cols) {
+		for (int i = 0; i < A.rows*A.cols ; i++)
+			dest->data[i] = A.data[i] - B.data[i];
+	}
+	else if (A.rows == B.rows && B.cols == 1) {
+        	for (int i = 0; i < A.rows*A.cols ; i++) 
+        	        dest->data[i] = A.data[i] - B.data[i / A.cols];
+	}
+	else if (A.cols == B.cols && B.rows == 1) {
+                for (int i = 0; i < A.rows*A.cols ; i++)
+			dest->data[i] = A.data[i] - B.data[i % B.cols];
+	}
+	else { printf("mat_subM: ERROR[Dimension mismatch]"); return;}
+}
+
+void mat_scale(double scalar, Matrix A, Matrix *dest) {
 	for (int i = 0 ; i < A.rows*A.cols ; i++) {
-		Mat[i] = scalar * A.data[i];
+		dest->data[i] = scalar * A.data[i];
 	}
-	Matrix x = {Mat, A.rows, A.cols};
-	return (x);
 }
 
-Matrix Transpose(Matrix A) {
-	double* Mat = malloc(sizeof(double) * A.rows * A.cols);
+void mat_trans(Matrix A, Matrix *dest) {
 	int y = 0, z = 0, a;
 	for (int i = 0 ; i < A.cols ; i++) {
 		a = z;
 		for (int j = 0 ; j < A.rows ; j++) {
-			Mat[y] = A.data[z];
+			dest->data[y] = A.data[z];
 			z += A.cols;
 			y++;
 		}
 		a++;
 		z = a;
 	}
-	Matrix x = {Mat, A.cols, A.rows};
-	return (x);
 }
 
-double MatrixSum(Matrix A) {
+void mat_pow(Matrix A, int power, Matrix *dest) {
+	for (int i = 0 ; i < A.rows * A.cols ; i++)
+		dest->data[i] = pow(A.data[i], power);
+}
+
+void mat_add_scalar(double z, Matrix A, Matrix *dest) {
+        for (int i = 0; i < A.rows*A.cols ; i++)
+                dest->data[i] = z + A.data[i];
+}
+
+
+void mat_fill(double value, Matrix *dest) {
+	for (int i = 0 ; i < dest->rows*dest->cols ; i++) {dest->data[i] = value;}
+}
+
+double mat_sum(Matrix A) {
 	double sum = 0;
 	for (int i = 0 ; i < A.rows * A.cols ; i++) {sum += A.data[i];}
 	return (sum);
 }
 
-Matrix MatrixPower(Matrix A, int power) {
-	double* Mat = malloc(sizeof(double) * A.rows * A.cols);
-	for (int i = 0 ; i < A.rows * A.cols ; i++)
-		Mat[i] = pow(A.data[i], power);
-	Matrix x = {Mat, A.rows, A.cols};
-	return (x);
-}
-
-void PrintMatrix(Matrix m) {
+void mat_print(Matrix m) {
     if (m.data == NULL) {
         printf("Invalid Matrix (NULL)\n");
         return;
@@ -144,15 +151,96 @@ void PrintMatrix(Matrix m) {
     printf("\n");
 }
 
-Matrix MatrixScaleAdd(double z, Matrix A) {
-        double* Mat = malloc(sizeof(double)*A.rows*A.cols);
-        for (int i = 0; i < A.rows*A.cols ; i++)
-                Mat[i] = z + A.data[i];
-        Matrix x = {Mat, A.rows, A.cols};
-        return (x);
-
+void mat_free(Matrix x) {
+	if (x.data != NULL) free(x.data);
 }
 
-void FreeMatrix(Matrix x) {
-	if (x.data != NULL) free(x.data);
+void mat_sub_scalar(Matrix A, double z, Matrix *dest) {
+        for (int i = 0; i < A.rows*A.cols ; i++)
+                dest->data[i] = A.data[i] - z;
+}
+
+void mat_scalar_sub(double z, Matrix A, Matrix *dest) {
+        for (int i = 0; i < A.rows*A.cols ; i++)
+                dest->data[i] = z - A.data[i];
+}
+
+void mat_add_bias(double bias, Matrix x, Matrix *dest) {
+	dest->data[0] = bias;
+	for (int i = 1 ; i <= x.rows*x.cols ; i++) {
+		dest->data[i] = x.data[i-1];
+	}
+}
+
+Matrix mat_create(int rows, int cols) {
+    Matrix m;
+    m.rows = rows;
+    m.cols = cols;
+    m.data = malloc(sizeof(double) * rows * cols);
+    return m;
+}
+
+void mat_replace(Matrix* x, Matrix* y) {
+	if (x->rows != y->rows || x->cols != y->cols) {printf("mat_replace: ERROR[Dimension mismatch]"); return;}
+	for (int i = 0 ; i < x->rows*x->cols ; i++) {x->data[i] = y->data[i];}
+}
+
+void mat_identity(Matrix* dest) {
+	mat_fill(0, dest);
+	dest->data[0] = 1;
+	int index = 1;
+	for (int i = dest->cols ; i < dest->rows * dest->cols ; i+=dest->cols) {
+		dest->data[i+index] = 1;
+		index++;
+	}
+}
+
+void mat_lu(Matrix x, Matrix *L, Matrix *U) {
+	double m = 0;
+	mat_identity(L);
+	mat_replace(U, &x);
+	for (int i = 0 ; i < x.cols ; i++) {
+		for (int j = i+1 ; j < x.rows ; j++) {
+			m = U->data[j * x.cols + i] / U->data[i * x.cols + i];
+			for (int k = i; k < x.cols ; k++) {
+				U->data[j * x.cols + k] = U->data[j * x.cols + k] - m * U->data[i * x.cols + k];
+			}
+			L->data[j * x.cols + i] = m;
+		}
+	}
+}
+
+void mat_inv(Matrix x, Matrix *dest) {
+	double *matL = malloc(sizeof(double)*x.rows*x.cols);
+	double *matU = malloc(sizeof(double)*x.rows*x.cols);
+	double *matI = malloc(sizeof(double)*x.rows*x.cols);
+
+	f_Matrix L = {matL, x.rows, x.cols};
+	f_Matrix U = {matU, x.rows, x.cols};
+	f_Matrix I = {matI, x.rows, x.cols};
+
+	mat_identity(&I);
+	mat_lu(x, &L, &U);
+
+	double* matTemp = malloc(sizeof(double)*x.rows*x.cols);
+	f_Matrix temp = {matTemp, x.rows, x.cols};
+	mat_fill(0, &temp);
+
+	for (int k = 0 ; k < x.cols ; k++) {
+		for (int i = 0 ; i < x.rows ; i++) {
+			temp.data[i*x.cols+k] += I.data[i*x.cols+k];
+			for (int j = 0 ; j < i ; j++) {
+				temp.data[i*x.cols+k] -= L.data[i * x.rows + j] * temp.data[j*x.cols+k];
+			}
+		}
+	}
+	for (int k = x.rows-1 ; k >= 0 ; k--) {
+		for (int i = x.rows-1 ; i >= 0 ; i--) {
+			dest->data[i*x.cols+k] += temp.data[i*x.cols+k];
+			for (int j = i+1 ; j < x.cols ; j++) {
+				dest->data[i*x.cols+k] -= U.data[i * x.rows + j] * dest->data[j*x.cols+k];
+			}
+			dest->data[i*x.cols+k] /= U.data[i*x.cols+i];
+		}
+	}
 }
