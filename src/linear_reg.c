@@ -71,15 +71,10 @@ Matrix lr_fit(Matrix x, Matrix y) {
 }
 
 Matrix lr_predict(Matrix z, Matrix w) {
-	double* Mat = calloc(z.rows * w.cols, sizeof(double));
-	for (int i = 0 ; i < z.rows ; i++) {
-		for (int j = 1 ; j <= z.cols ; j++) {
-			Mat[i] += z.data[i*z.cols + (j-1)] * w.data[j];
-		}
-		Mat[i] += w.data[0];
-	}
-	Matrix x = {Mat, z.rows, w.cols};
-	return (x);
+	double* Mat = malloc(sizeof(double)*z.rows*w.cols);
+	Matrix preds = {Mat, z.rows, w.cols};
+	mat_mul(z, w, &preds);
+	return (preds);
 }
 
 Matrix min_max(Matrix x) {
