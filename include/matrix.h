@@ -224,6 +224,8 @@ void mat_identity(Matrix* x);
  */
 void mat_inv(Matrix X, Matrix *dest);
 
+void mat_replace(Matrix* p, Matrix* x);
+
 /**
  * @macro mat_sub(arg1, arg2)
  * 
@@ -250,6 +252,10 @@ void mat_inv(Matrix X, Matrix *dest);
 				double: mat_sub_scalar), \
 	double: mat_scalar_sub \
 	) (arg1, arg2, arg3)
+
+#define mat_mult(arg1, arg2, arg3) _Generic((arg1), \
+		Matrix: mat_mul, \
+		double: mat_scale) (arg1, arg2, arg3)
 
 /**
  * @brief Conditional compilation for compiler-specific support

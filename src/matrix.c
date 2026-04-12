@@ -63,7 +63,7 @@ void mat_mul(Matrix A, Matrix B, Matrix* dest) {
 
 void mat_add(Matrix A, Matrix B, Matrix *dest)
 {
-	if (dest->data == A.data || dest->data == B.data) {printf("mat_mul(): ERROR[Destination matrix cannot alias input matrices]"); return;}
+	if (dest->data == A.data || dest->data == B.data) {printf("mat_add(): ERROR[Destination matrix cannot alias input matrices]"); return;}
 	if (A.rows != B.rows || A.cols != B.cols)
 	{printf("mat_add(): ERROR[Dimension mismatch]"); return;}
 	for (int i = 0; i < A.rows*A.cols ; i++) {dest->data[i] = A.data[i] + B.data[i];}
@@ -71,7 +71,7 @@ void mat_add(Matrix A, Matrix B, Matrix *dest)
 
 void mat_subM(Matrix A, Matrix B, Matrix *dest)
 {
-	if (dest->data == A.data || dest->data == B.data) {printf("mat_mul(): ERROR[Destination matrix cannot alias input matrices]"); return;}
+	if (dest->data == A.data || dest->data == B.data) {printf("mat_subM(): ERROR[Destination matrix cannot alias input matrices]"); return;}
 	if (A.rows == B.rows && A.cols == B.cols) {
 		for (int i = 0; i < A.rows*A.cols ; i++)
 			dest->data[i] = A.data[i] - B.data[i];

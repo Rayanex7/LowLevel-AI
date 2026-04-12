@@ -92,4 +92,16 @@ Matrix MMS(Matrix x, Matrix min_max);
  */
 Matrix min_max(Matrix x);
 
+Matrix log_fit(Matrix x, Matrix y);
+
+double sigmoid_s(double x);
+
+void sigmoid_m(Matrix h);
+
+#define sigmoid(arg1) \
+	_Generic((arg1), \
+		Matrix: sigmoid_m, \
+		double: sigmoid_s) (arg1)
+
+
 #endif
